@@ -40,13 +40,13 @@ PRINT_CSS="$SCRIPT_DIR/../templates/bip-print.css"
 
 # --- Strip YAML frontmatter (used by Eleventy, not Pandoc) ---
 CLEAN_MD="$SESSION_DIR/.pandoc-input.md"
-# Strip YAML frontmatter (lines 1 through closing ---) so Pandoc doesn't render it as a title block
-FIRST_LINE=$(head -1 "$MD_FILE")
+# Normalize CRLF to LF first, then strip YAML frontmatter so Pandoc doesn't render it as a title block
+tr -d '\r' < "$MD_FILE" > "$CLEAN_MD"
+FIRST_LINE=$(head -1 "$CLEAN_MD")
 if [ "$FIRST_LINE" = "---" ]; then
-  FRONTMATTER_END=$(tail -n +2 "$MD_FILE" | grep -n '^---$' | head -1 | cut -d: -f1)
-  tail -n +"$((FRONTMATTER_END + 2))" "$MD_FILE" > "$CLEAN_MD"
-else
-  cp "$MD_FILE" "$CLEAN_MD"
+  FRONTMATTER_END=$(tail -n +2 "$CLEAN_MD" | grep -n '^---$' | head -1 | cut -d: -f1)
+  tail -n +"$((FRONTMATTER_END + 2))" "$CLEAN_MD" > "$CLEAN_MD.tmp"
+  mv "$CLEAN_MD.tmp" "$CLEAN_MD"
 fi
 
 # --- Generate HTML ---
