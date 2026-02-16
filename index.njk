@@ -1,0 +1,29 @@
+---
+layout: base.njk
+title: "Build in Public — Session Archive"
+permalink: /
+---
+<h1>Build in Public</h1>
+<p style="color: #718096; font-size: 1.1em; margin-bottom: 3rem;">
+  An open space for building at <a href="https://improving.com">Improving</a>. The point isn't polish, it's progress.
+</p>
+
+<h2 style="border-top: none; padding-top: 0; margin-top: 0;">Sessions</h2>
+
+{% for session in collections.sessions %}
+<article style="margin-bottom: 2.5rem;">
+  <h3 style="margin-bottom: 0.25rem;">
+    <a href="{{ session.url | url }}">{{ session.data.title }}</a>
+  </h3>
+  <time style="color: #718096; font-size: 0.9em;" datetime="{{ session.data.date | date("YYYY-MM-DD") }}">
+    {{ session.data.date | date }}
+  </time>
+  {% if session.data.description %}
+  <p style="margin-top: 0.5rem; color: #4a5568;">{{ session.data.description }}</p>
+  {% endif %}
+</article>
+{% endfor %}
+
+{% if collections.sessions.length == 0 %}
+<p style="color: #718096;">No sessions published yet.</p>
+{% endif %}
