@@ -48,6 +48,8 @@ Session folders are named by date: `M-DD-YY` (e.g., `1-30-26`)
    - Insights and themes
    - Follow-up items
 
+**Speaker attribution warning**: BiP is a hybrid meeting with a shared conference room mic. Teams VTT only identifies remote participants; in-room speakers appear as unnamed tags. Deepgram diarization assigns speaker numbers but frequently misattributes in shared-mic setups. **Always present uncertain attributions to a human for verification before publishing.** See the `bip-summary` skill for detailed guidance.
+
 ## Key Documents
 
 | File | Purpose |

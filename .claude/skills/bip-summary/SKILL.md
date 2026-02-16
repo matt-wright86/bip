@@ -86,6 +86,22 @@ Then continue with the markdown content:
 - **Keep summaries scannable** with clear headers and bullet points
 - **Include humor or memorable moments** that captured the session's spirit
 
+## Speaker Attribution — Important
+
+BiP is a hybrid meeting with in-room participants sharing a single conference room microphone. This makes automated speaker identification unreliable:
+
+- **Teams VTT transcripts** only identify remote participants by name. In-room speakers appear as unnamed `<v >` tags.
+- **Deepgram diarization** assigns speaker numbers (Speaker 0, Speaker 1, etc.) but frequently misattributes when people talk over each other, speak in quick succession, or sit near each other by the shared mic.
+- **Cross-referencing** VTT with Deepgram helps but is not sufficient — diarization errors can silently assign the wrong speaker to entire passages.
+
+**Before publishing, you MUST present any uncertain attributions to the user for manual confirmation.** Format them as a table with timestamps so the user can easily verify against the video:
+
+| Timestamp | Current Attribution | Quote/Content |
+|---|---|---|
+| 4:44 | Claudio? | "I have a small child, she's four years old..." |
+
+Do NOT publish the summary with unverified attributions. Getting attribution wrong misrepresents what people said and undermines trust in the summary.
+
 ## After Creating
 
 The summary serves as:
