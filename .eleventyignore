@@ -10,5 +10,7 @@ README.md
 # Ignore all markdown in session dirs except session summaries
 **/*-run-sheet.md
 **/*-deepgram-transcript.md
+**/deepgram-transcript.md
 **/*.vtt
 **/*.mp4
+how-this-works.md

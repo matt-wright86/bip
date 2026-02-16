@@ -1,3 +1,10 @@
+---
+layout: session.njk
+title: "BiP Session Summary — 2026-02-06"
+date: 2026-02-06
+description: "Making space to create, TLC Q2 speakers, migrating blogging from ChatGPT to Windsurf, and getting feedback after conference rejection."
+---
+
 # BiP Session Summary — 2026-02-06
 
 ## Session Overview
@@ -5,6 +12,11 @@
 - **Duration**: ~51 minutes
 - **Facilitator**: Matthew Wright
 - **Participants**: Matthew, Claudio, Terrence, Jonathan, Josh Fryer (remote from San Antonio), Joanna Szymczyk, Alexis
+
+> **Note on attribution**: This was a hybrid meeting with a shared conference room microphone. Speaker identification was assisted by Deepgram diarization. Some brief contributions may not be attributed.
+
+![Session opening — board with voting in progress](screenshots/01-00m30s-session-opening.png)
+*The agile.coffee board at session start, with "how did you make the space to get started?" as the first topic under discussion.*
 
 ---
 
@@ -38,6 +50,9 @@ Josh opened by asking the group a practical question: for those who are publishi
 
 ### 2. Looking for TLC Q2 Speakers/Topics! (4 votes)
 
+![Board during TLC discussion](screenshots/03-24m20s-tlc-q2-discussion.png)
+*"Looking for TLC Q2 speakers/topics" moves to Current Being Discussed.*
+
 **Raised by**: Claudio
 
 Claudio announced that Q1 for The Learning Circle (TLC, formerly Tech Fridays) is fully booked and he's already looking ahead to Q2. He explained TLC to Josh: a bi-weekly gathering at Improving Houston (running 10+ years) where someone presents a talk. It's not limited to technical topics—it's "a place for us to learn together."
@@ -53,6 +68,9 @@ Claudio announced that Q1 for The Learning Circle (TLC, formerly Tech Fridays) i
 ---
 
 ### 3. Migrating My Blogging Process from ChatGPT to Windsurf (3 votes)
+
+![Board during blogging migration discussion](screenshots/04-29m20s-blogging-migration.png)
+*Claudio's blogging migration topic in the hot seat, with two items already in Done Discussing.*
 
 **Raised by**: Claudio
 
@@ -74,6 +92,9 @@ Now he's migrating to Windsurf/Cursor, where he creates markdown-based workflow 
 ---
 
 ### 4. Getting Feedback After Rejection! (3 votes)
+
+![Board during rejection feedback discussion](screenshots/05-37m40s-rejection-feedback.png)
+*Final topic of the day — "getting feedback after rejection" — with three items completed.*
 
 **Raised by**: Josh Fryer
 
@@ -129,6 +150,13 @@ Matthew noted the time and asked the group how to handle undiscussed board items
 - Items not discussed from today's board (re-add if still relevant)
 
 ---
+
+## Board State
+
+**Board**: [agile.coffee](http://agile.coffee/#7347fa-c1de-4c1b-a47d-a459ad210497)
+
+![Final board state](agile-board.png)
+*Final board state — four items discussed, four remaining for future sessions.*
 
 ## Board Items Not Discussed
 
