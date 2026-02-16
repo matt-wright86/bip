@@ -22,10 +22,24 @@ export default function (eleventyConfig) {
     });
   });
 
+  // Session summaries: output to session dir root so relative image paths work
+  // e.g., 2-13-26/2026-02-13-session-summary.md → _site/2-13-26/index.html
+  eleventyConfig.addGlobalData("eleventyComputed", {
+    permalink: (data) => {
+      const inputPath = data.page?.inputPath || "";
+      if (inputPath.includes("-session-summary.md")) {
+        const dir = inputPath.replace(/^\.\//, "").split("/")[0];
+        return `/${dir}/`;
+      }
+      return data.permalink;
+    },
+  });
+
   // Passthrough copy: CSS and session screenshots
   eleventyConfig.addPassthroughCopy({ "templates/bip-web.css": "css/bip-web.css" });
   eleventyConfig.addPassthroughCopy("*-*-26/screenshots");
   eleventyConfig.addPassthroughCopy("*-*-26/agile-coffee-board.png");
+  eleventyConfig.addPassthroughCopy("*-*-26/agile-board.png");
 
   // Collection: all session summaries, newest first
   eleventyConfig.addCollection("sessions", function (collectionApi) {
