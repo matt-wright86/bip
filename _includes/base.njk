@@ -8,5 +8,23 @@
 </head>
 <body>
   {{ content | safe }}
+
+  <!-- Lightbox: click any image to expand -->
+  <div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;cursor:zoom-out;justify-content:center;align-items:center;">
+    <img id="lightbox-img" style="max-width:95vw;max-height:95vh;border-radius:4px;" alt="">
+  </div>
+  <script>
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lightbox-img');
+    document.querySelectorAll('img:not(#lightbox-img)').forEach(img => {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', () => {
+        lbImg.src = img.src;
+        lbImg.alt = img.alt;
+        lb.style.display = 'flex';
+      });
+    });
+    lb.addEventListener('click', () => { lb.style.display = 'none'; });
+  </script>
 </body>
 </html>
