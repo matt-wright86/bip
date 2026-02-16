@@ -10,10 +10,15 @@ You are creating a session summary from a BiP meeting transcript.
 
 ## Instructions
 
-1. **Locate the transcript**: Use the path provided in `$ARGUMENTS`, or look for the most recent `.vtt` file
-2. **Read the full transcript** - it may require multiple reads for long files
-3. **Check for a board screenshot** in the same folder (usually `.png`)
-4. **Generate the summary** following the template below
+1. **Check for transcript sources** in the session directory (priority order):
+   - `deepgram.json` + `speaker-confidence-report.md` → proceed to step 2
+   - `deepgram.json` only → run `/usr/bin/python3 scripts/analyze-speakers.py <session-dir>` first
+   - `*.mp4` or `*.mp3` only → run `/usr/bin/python3 scripts/transcribe.py <session-dir>` (this chains `analyze-speakers.py` automatically)
+   - `*.vtt` only → fallback to reading VTT directly (no confidence data available)
+2. **Read the speaker confidence report** (`speaker-confidence-report.md`) — note the speaker map (which speaker numbers map to which names) and all flagged passages
+3. **Read the transcript** (`deepgram-transcript.md` for Deepgram-based, or `*.vtt` for fallback) — it may require multiple reads for long files
+4. **Check for a board screenshot** in the same folder (usually `.png`)
+5. **Generate the summary** following the template below
 
 ## Summary Template
 
@@ -94,11 +99,21 @@ BiP is a hybrid meeting with in-room participants sharing a single conference ro
 - **Deepgram diarization** assigns speaker numbers (Speaker 0, Speaker 1, etc.) but frequently misattributes when people talk over each other, speak in quick succession, or sit near each other by the shared mic.
 - **Cross-referencing** VTT with Deepgram helps but is not sufficient — diarization errors can silently assign the wrong speaker to entire passages.
 
-**Before publishing, you MUST present any uncertain attributions to the user for manual confirmation.** Format them as a table with timestamps so the user can easily verify against the video:
+### Automated Confidence Flagging
 
-| Timestamp | Current Attribution | Quote/Content |
-|---|---|---|
-| 4:44 | Claudio? | "I have a small child, she's four years old..." |
+The `scripts/analyze-speakers.py` script automatically:
+- **Resolves speaker names** by cross-referencing Deepgram speaker numbers with VTT named entries (remote participants like Josh Fryer, Joanna Szymczyk)
+- **Flags low-confidence passages** where `speaker_confidence` < 0.50 or any word has confidence of 0.0
+- **Marks `[LOW CONFIDENCE]`** in `deepgram-transcript.md` on flagged segments
+- **Generates `speaker-confidence-report.md`** with a table of all flagged passages including timestamps, attributed speaker, confidence score, and text preview
+
+When writing the summary, **use the confidence report as your primary guide** for which attributions need verification. In-room speakers (not resolved via VTT) and any flagged passages should all be treated as uncertain.
+
+**Before publishing, you MUST present ALL uncertain attributions to the user for manual confirmation.** Format them as a table with timestamps so the user can easily verify against the video:
+
+| Timestamp | Current Attribution | Confidence | Quote/Content |
+|---|---|---|---|
+| 4:44 | Speaker 0 (in-room) | 0.27 | "I have a small child, she's four years old..." |
 
 Do NOT publish the summary with unverified attributions. Getting attribution wrong misrepresents what people said and undermines trust in the summary.
 
