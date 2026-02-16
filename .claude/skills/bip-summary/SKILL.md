@@ -1,0 +1,96 @@
+---
+name: bip-summary
+description: Create a session summary from a Build in Public transcript. Use after a BiP meeting to generate the summary document.
+argument-hint: "[path to transcript file]"
+---
+
+# Build in Public Session Summary
+
+You are creating a session summary from a BiP meeting transcript.
+
+## Instructions
+
+1. **Locate the transcript**: Use the path provided in `$ARGUMENTS`, or look for the most recent `.vtt` file
+2. **Read the full transcript** - it may require multiple reads for long files
+3. **Check for a board screenshot** in the same folder (usually `.png`)
+4. **Generate the summary** following the template below
+
+## Summary Template
+
+Create a file named `YYYY-MM-DD-session-summary.md` with this structure.
+
+**Important**: The file must start with YAML frontmatter so Eleventy can render it as a page on the BiP site. Place this block at the very top of the file, before the markdown heading:
+
+```yaml
+---
+layout: session.njk
+title: "BiP Session Summary — YYYY-MM-DD"
+date: YYYY-MM-DD
+description: "Brief one-line summary of the session topics."
+---
+```
+
+Then continue with the markdown content:
+
+```markdown
+# BiP Session Summary — YYYY-MM-DD
+
+## Session Overview
+- **Duration**: ~XX minutes
+- **Facilitator**: Matthew Wright
+- **Participants**: [List names mentioned in transcript]
+
+---
+
+## Topics Discussed
+
+### 1. [Topic Title] (X votes)
+**Raised by**: [Name]
+
+[2-3 paragraph summary of the discussion]
+
+**Key points:**
+- [Bullet point insights]
+
+**Quotes/moments worth noting:**
+- [Notable quotes if any]
+
+---
+
+### 2. [Next Topic]...
+
+---
+
+## Key Themes & Insights
+
+1. **[Theme]** — [Brief explanation]
+2. **[Theme]** — [Brief explanation]
+
+---
+
+## Next Week's Potential Follow-ups
+- [Items mentioned for future discussion]
+
+---
+
+## Board Items Not Discussed
+- [List items that were on the board but didn't get covered]
+```
+
+## Guidelines
+
+- **Attribute contributions** to specific people when clear from transcript
+- **Capture the "why"** not just the "what" of discussions
+- **Note frameworks or models** that emerged (e.g., "Have/Do/Be framework")
+- **Identify recurring themes** that connect to previous sessions
+- **Keep summaries scannable** with clear headers and bullet points
+- **Include humor or memorable moments** that captured the session's spirit
+
+## After Creating
+
+The summary serves as:
+- Input for next week's run sheet recap
+- Historical record of BiP discussions
+- Reference for recurring themes and participant contributions
+
+**Next step**: Run `/bip-publish <session-dir>` to build standalone HTML/PDF, preview the Eleventy site, and deploy to GitHub Pages.
