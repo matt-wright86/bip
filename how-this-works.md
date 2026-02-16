@@ -11,20 +11,26 @@ Teams recording (.mp4)
     |
     ├──────────────────────────────────┐
     v                                  v
-Transcript                     documenting-video skill
-(.vtt from Teams,              (downloads video, plays it locally
- or Deepgram for               in Chrome via a custom HTML player,
- better diarization)           uses Chrome DevTools MCP to seek
-    |                          to key moments, captures screenshots)
+Transcription pipeline          documenting-video skill
+(scripts/transcribe.py          (downloads video, plays it locally
+ calls Deepgram Nova-3 API,     in Chrome via a custom HTML player,
+ then analyze-speakers.py       uses Chrome DevTools MCP to seek
+ resolves names + flags         to key moments, captures screenshots)
+ low-confidence attributions)          |
+    |                                  v
+    v                           screenshots/ directory
+deepgram-transcript.md          (board state, demos, screen shares,
++ speaker-confidence-report.md  participant grid)
+    |                                  |
     v                                  |
-bip-summary skill                      v
-(reads transcript,             screenshots/ directory
- synthesizes discussion)       (board state, demos, screen shares,
-    |                          participant grid)
+bip-summary skill                      |
+(reads transcript + report,            |
+ verifies flagged attributions)        |
     └──────────┬───────────────────────┘
                v
     Session summary markdown
-    (prose + inline screenshot references)
+    (prose + inline screenshot references,
+     with verified speaker attributions)
                |
                v
     Two output paths:
@@ -32,7 +38,9 @@ bip-summary skill                      v
         └── Pandoc + WeasyPrint --> standalone HTML & PDF (for sharing offline)
 ```
 
-The key idea: the transcript and the video recording are the two raw inputs. Claude synthesizes the transcript into prose, and a separate skill automates screenshot capture by driving a real browser. Everything downstream is formatting and publishing.
+The key idea: the video recording is the single raw input. The transcription pipeline extracts audio, sends it to Deepgram, analyzes speaker confidence, and cross-references with the Teams VTT to resolve names. A separate skill automates screenshot capture by driving a real browser. Claude synthesizes both into prose, with flagged attributions verified by a human before publishing. Everything downstream is formatting and publishing.
+
+For a deep dive on the transcription and speaker analysis pipeline, see [transcription-pipeline.md](transcription-pipeline.md).
 
 ## The Toolchain
 
@@ -48,7 +56,7 @@ Here's what's involved:
 | **Chrome DevTools MCP** | MCP server that lets Claude control a real Chrome browser -- navigate pages, seek video, take screenshots. This is what makes automated screenshot capture possible. |
 | **GitHub Actions** | On push to `main`, runs `npx eleventy` and deploys the `_site/` directory to GitHub Pages. |
 | **yt-dlp** | Video downloader. Grabs the Teams recording (or any video URL) as a local `.mp4` file for the screenshot pipeline. |
-| **Deepgram** (optional) | When I need better speaker diarization than Teams provides, I run the recording through Deepgram's API. The transcript comes back with speaker labels, which makes attribution in the summary much more accurate. |
+| **Deepgram Nova-3** | Primary transcription path. `scripts/transcribe.py` sends the session audio to Deepgram's API via the Python SDK and gets back word-level data with `speaker_confidence` scores. `scripts/analyze-speakers.py` then cross-references with the Teams VTT to resolve speaker names and flags uncertain attributions for human review. See [transcription-pipeline.md](transcription-pipeline.md) for the full breakdown. |
 
 ## The Skills
 
@@ -71,12 +79,13 @@ The run sheet is my facilitator script. It has everything I need during the meet
 
 **What:** Creates a session summary from a meeting transcript.
 
-**Invocation:** `/bip-summary path/to/transcript.vtt`
+**Invocation:** `/bip-summary <session-dir>`
 
 **What it does:**
-1. Reads the full transcript (VTT or Deepgram format)
-2. Checks for board screenshots in the session folder
-3. Generates a structured summary with:
+1. Checks for transcript sources (prefers `deepgram.json` + `speaker-confidence-report.md`, falls back to VTT)
+2. Reads the speaker confidence report to know which attributions need verification
+3. Reads the transcript and checks for board screenshots
+4. Generates a structured summary with:
    - Session overview (duration, participants)
    - Topics discussed with vote counts and attribution
    - Key points and notable quotes
@@ -84,6 +93,8 @@ The run sheet is my facilitator script. It has everything I need during the meet
    - Follow-up items and undiscussed board items
 
 The guidelines tell Claude to attribute contributions to specific people, capture the "why" not just the "what," note any frameworks or models that emerged, and keep things scannable. It's not a transcript -- it's a synthesis.
+
+Before publishing, the skill presents all uncertain attributions (flagged by the confidence pipeline) in a verification table with timestamps. A human confirms or corrects each one against the video. This is a hard requirement -- no unverified attributions make it into the published summary.
 
 ### documenting-video
 
@@ -232,13 +243,19 @@ Claude reads last week's summary, creates the new session folder, and generates 
 
 ### After the meeting (Thursday afternoon or Friday)
 
-1. **Save the transcript** -- Teams generates a `.vtt` file. Sometimes I also run the recording through Deepgram for better speaker diarization.
+1. **Save the transcript and run transcription:**
+   - Teams generates a `.vtt` file -- save it to the session folder
+   - Run the transcription pipeline:
+     ```bash
+     /usr/bin/python3 scripts/transcribe.py 2-20-26
+     ```
+     This extracts audio from the `.mp4`, sends it to Deepgram, and produces `deepgram.json`, `deepgram-transcript.md`, and `speaker-confidence-report.md`. See [transcription-pipeline.md](transcription-pipeline.md) for details.
 
 2. **Generate the summary:**
    ```
-   /bip-summary 2-20-26/transcript.vtt
+   /bip-summary 2-20-26
    ```
-   Claude reads the entire transcript, cross-references the board screenshot, and produces the session summary markdown.
+   Claude reads the Deepgram transcript and confidence report, cross-references the board screenshot, and produces the session summary markdown. It presents uncertain attributions for verification before finalizing.
 
 3. **Capture screenshots** (if I recorded video):
    ```
@@ -279,10 +296,14 @@ Build In Public/
 │   ├── bip-web.css                 # Screen stylesheet
 │   └── bip-print.css               # Print/PDF stylesheet
 ├── scripts/
-│   └── build.sh                    # Pandoc + WeasyPrint pipeline
+│   ├── build.sh                    # Pandoc + WeasyPrint pipeline
+│   ├── transcribe.py               # Deepgram API transcription
+│   └── analyze-speakers.py         # Speaker confidence analysis
 ├── index.njk                       # Archive index page
 ├── eleventy.config.js              # Eleventy config
+├── requirements.txt                # Python dependencies (deepgram-sdk)
 ├── CLAUDE.md                       # Project context for Claude
+├── transcription-pipeline.md       # Transcription pipeline documentation
 ├── 1-30-26/                        # Session folder
 │   ├── 2026-01-30-session-summary.md
 │   ├── 2026-01-30-run-sheet.md
