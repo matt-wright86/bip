@@ -9,19 +9,30 @@ The flow each week looks like this:
 ```
 Teams recording (.mp4)
     |
-    v
-Transcript (.vtt from Teams, or Deepgram for better diarization)
-    |
-    v
-Claude Code + bip-summary skill --> session summary markdown + screenshots
-    |
-    v
-Two output paths:
-    ├── Eleventy --> GitHub Pages (web archive)
-    └── Pandoc + WeasyPrint --> standalone HTML & PDF (for sharing offline)
+    ├──────────────────────────────────┐
+    v                                  v
+Transcript                     documenting-video skill
+(.vtt from Teams,              (downloads video, plays it locally
+ or Deepgram for               in Chrome via a custom HTML player,
+ better diarization)           uses Chrome DevTools MCP to seek
+    |                          to key moments, captures screenshots)
+    v                                  |
+bip-summary skill                      v
+(reads transcript,             screenshots/ directory
+ synthesizes discussion)       (board state, demos, screen shares,
+    |                          participant grid)
+    └──────────┬───────────────────────┘
+               v
+    Session summary markdown
+    (prose + inline screenshot references)
+               |
+               v
+    Two output paths:
+        ├── Eleventy --> GitHub Pages (web archive)
+        └── Pandoc + WeasyPrint --> standalone HTML & PDF (for sharing offline)
 ```
 
-The key idea: the transcript is the raw material, Claude does the synthesis, and everything downstream is just formatting and publishing.
+The key idea: the transcript and the video recording are the two raw inputs. Claude synthesizes the transcript into prose, and a separate skill automates screenshot capture by driving a real browser. Everything downstream is formatting and publishing.
 
 ## The Toolchain
 
@@ -34,7 +45,9 @@ Here's what's involved:
 | **Eleventy** (v3.1) | Static site generator. Turns the session summary markdown into HTML pages. ESM config, Nunjucks templates, markdown-it with implicit figures plugin. |
 | **Pandoc** | Universal document converter. Takes the same markdown and produces standalone HTML (with embedded images) or feeds it to WeasyPrint for PDF. |
 | **WeasyPrint** | CSS-based PDF renderer. Pandoc hands it HTML + a print stylesheet, it produces a paginated PDF with running headers/footers. |
+| **Chrome DevTools MCP** | MCP server that lets Claude control a real Chrome browser -- navigate pages, seek video, take screenshots. This is what makes automated screenshot capture possible. |
 | **GitHub Actions** | On push to `main`, runs `npx eleventy` and deploys the `_site/` directory to GitHub Pages. |
+| **yt-dlp** | Video downloader. Grabs the Teams recording (or any video URL) as a local `.mp4` file for the screenshot pipeline. |
 | **Deepgram** (optional) | When I need better speaker diarization than Teams provides, I run the recording through Deepgram's API. The transcript comes back with speaker labels, which makes attribution in the summary much more accurate. |
 
 ## The Skills
@@ -74,20 +87,59 @@ The guidelines tell Claude to attribute contributions to specific people, captur
 
 ### documenting-video
 
-**What:** Turns any video recording into comprehensive markdown documentation with inline screenshots.
+**What:** Turns any video recording into comprehensive markdown documentation with inline screenshots. This is probably the most technically interesting part of the pipeline -- it's an AI agent driving a real browser to extract frames from video.
 
-This one's more general-purpose (not BiP-specific). I built it for knowledge transfers, demos, and recorded meetings. It lives in my global skills at `~/.claude/skills/documenting-video/`.
+This one's a general-purpose skill (not BiP-specific). I built it for knowledge transfers, demos, and recorded meetings. It lives in my global skills at `~/.claude/skills/documenting-video/`. But it's become central to BiP -- it's how I get the screenshots that make the session summaries visual instead of a wall of text.
 
-**The workflow:**
-1. Downloads the video (via `yt-dlp`) or uses a local file
-2. Gets a transcript -- either from YouTube captions, or by running OpenAI Whisper locally
-3. Analyzes the transcript for "screenshot-worthy moments" (visual references, demos, topic changes, code being shown)
-4. Uses Chrome DevTools MCP to automate a browser: loads the video, seeks to each timestamp, captures screenshots
-5. Assembles everything into a markdown document with screenshots placed at narrative points
+**Invocation:** `/documenting-video`
 
-It has a bunch of hard-won lessons baked in -- like the fact that YouTube's player crashes after ~5 rapid seeks (so it downloads the video and plays it locally instead), and that the `seeked` event almost never fires on HTML5 video (so it uses a 3-second timeout as the primary mechanism).
+**How it actually works under the hood:**
 
-I use this for the BiP screenshots -- it captures the board state, the Teams participant view, and any screen shares during the session.
+1. **Video acquisition** -- Downloads the video via `yt-dlp` or uses a local `.mp4`. For BiP, the input is the Teams meeting recording.
+
+2. **Transcript analysis** -- Claude reads the transcript and identifies "screenshot-worthy moments." The skill defines detection patterns for this:
+   - *Critical*: Visual references ("as you can see"), demonstrations ("let me show you"), diagrams/architecture
+   - *High*: Topic changes, code being shown, UI navigation, errors
+   - *Medium*: Key concepts, important takeaways
+
+   It produces a `moments.json` with timestamps, categories, and suggested captions. Density control keeps it to roughly 1 screenshot per 2-3 minutes (more for screen shares, fewer for talking-head content).
+
+3. **Local playback setup** -- This is where it gets interesting. The skill builds a minimal HTML page:
+   ```html
+   <video id="v" src="video.mp4" preload="auto"></video>
+   ```
+   Then serves it locally with a custom Python server (`serve.py`) that supports HTTP range requests -- Python's built-in `http.server` doesn't handle range requests, which means the browser can't seek in the video at all. The custom server handles `Range` headers and returns `206 Partial Content`. Claude navigates Chrome to `http://localhost:8765/player.html`.
+
+4. **Chrome DevTools MCP screenshot loop** -- This is the core. For each moment in `moments.json`, Claude:
+   - Seeks the video to the timestamp via `evaluate_script` (sets `video.currentTime`)
+   - Runs a player health check -- is `readyState >= 2`? Any error overlays? `video.error` set?
+   - Checks for blank/black frames by sampling a 3x3 pixel grid via canvas
+   - Captures the screenshot with `take_screenshot`, targeting the `<video>` element UID directly (so you get the clean video frame, not browser chrome)
+   - Waits 1-2 seconds between captures to avoid crashing the player
+
+   The filenames encode the metadata: `03-09m20s-daniel-research-workflow.png` means screenshot #3, taken at 9 minutes 20 seconds, showing Daniel's research workflow.
+
+5. **Assembly** -- The screenshots land in the session's `screenshots/` directory, and the summary references them with standard markdown image syntax: `![caption](screenshots/filename.png)`.
+
+**What it produced for the 2-13-26 session:**
+
+That session had 7 screenshots captured from the Teams recording:
+- `05-00m30s-session-opening.png` -- the fresh agile.coffee board before voting
+- `03-09m20s-daniel-research-workflow.png` -- Daniel's research workflow demo
+- `01-24m45s-screenshare-claudio-tlc-app.png` -- Claudio's TLC app screen share
+- `06-26m10s-claudio-tlc-app-detail.png` -- detail view of that same app
+- `04-37m35s-event-sourcing-discussion.png` -- during the event sourcing topic
+- `07-53m20s-session-close.png` -- the wrap-up
+
+Those screenshots are placed inline in the summary at the relevant discussion points. When Eleventy builds the site, the `markdown-it-implicit-figures` plugin wraps them in `<figure><figcaption>` tags, so the alt text becomes a visible caption.
+
+**Hard-won lessons baked into the skill:**
+
+The `SKILL.md` is ~600 lines because video automation is full of edge cases:
+- **YouTube crashes after rapid seeks.** The player silently enters an error state after ~5 quick seeks. Error overlays look normal to canvas-based blank detection (they have text and icons that produce pixel variance). Fix: download the video and play it locally instead.
+- **`seeked` event never fires.** Even with local playback, the HTML5 `seeked` event is unreliable. Fix: use a 3-second timeout as the primary seek mechanism. The event listener is just a bonus if it happens to work.
+- **Canvas can't catch error screens.** The 3x3 pixel sampling detects black/blank frames but not "Something went wrong" overlays. Fix: a separate health check that inspects `video.error`, `readyState`, `networkState`, and scans `document.body.innerText` for error strings.
+- **Python's `http.server` breaks seeking.** No range request support means `video.seekable` is empty. Fix: custom `serve.py` with proper `Range` header handling and `206 Partial Content` responses.
 
 ## The Publishing Pipeline
 
@@ -192,7 +244,7 @@ Claude reads last week's summary, creates the new session folder, and generates 
    ```
    /documenting-video
    ```
-   This pulls screenshots from the recording at key moments -- board state, participant grid, screen shares.
+   Claude downloads the recording, analyzes the transcript for screenshot-worthy moments, spins up a local video player in Chrome, and drives the browser through each timestamp -- seeking, health-checking, and capturing. The screenshots land in `screenshots/` with descriptive filenames like `03-09m20s-daniel-research-workflow.png`. I reference them in the summary markdown, and they flow through to both the web and PDF outputs.
 
 4. **Review and edit** -- I read through the summary, fix any attribution errors, adjust emphasis, and make sure it captures the spirit of the conversation.
 
