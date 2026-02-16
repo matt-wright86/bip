@@ -93,4 +93,6 @@ The summary serves as:
 - Historical record of BiP discussions
 - Reference for recurring themes and participant contributions
 
-**Next step**: Run `/bip-publish <session-dir>` to build standalone HTML/PDF, preview the Eleventy site, and deploy to GitHub Pages.
+**Next steps**:
+1. Run `/documenting-video` on the meeting video recording to extract screenshots at key moments (board state, demos, discussion points). Screenshots are saved to the session's `screenshots/` directory and can be referenced in the summary using standard markdown image syntax: `![Caption](screenshots/filename.png)`.
+2. Run `/bip-publish <session-dir>` to build standalone HTML/PDF, preview the Eleventy site, and deploy to GitHub Pages.
