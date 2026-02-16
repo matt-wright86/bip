@@ -38,10 +38,21 @@ PRETTY_DATE="$FILE_DATE"
 WEB_CSS="$SCRIPT_DIR/../templates/bip-web.css"
 PRINT_CSS="$SCRIPT_DIR/../templates/bip-print.css"
 
+# --- Strip YAML frontmatter (used by Eleventy, not Pandoc) ---
+CLEAN_MD="$SESSION_DIR/.pandoc-input.md"
+# Strip YAML frontmatter (lines 1 through closing ---) so Pandoc doesn't render it as a title block
+FIRST_LINE=$(head -1 "$MD_FILE")
+if [ "$FIRST_LINE" = "---" ]; then
+  FRONTMATTER_END=$(tail -n +2 "$MD_FILE" | grep -n '^---$' | head -1 | cut -d: -f1)
+  tail -n +"$((FRONTMATTER_END + 2))" "$MD_FILE" > "$CLEAN_MD"
+else
+  cp "$MD_FILE" "$CLEAN_MD"
+fi
+
 # --- Generate HTML ---
 echo ""
 echo "Generating HTML..."
-if pandoc "$MD_FILE" \
+if pandoc "$CLEAN_MD" \
   --standalone \
   --embed-resources \
   --resource-path="$SESSION_DIR" \
@@ -57,7 +68,7 @@ fi
 # --- Generate PDF ---
 echo ""
 echo "Generating PDF..."
-if pandoc "$MD_FILE" \
+if pandoc "$CLEAN_MD" \
   --standalone \
   --resource-path="$SESSION_DIR" \
   --css="$PRINT_CSS" \
@@ -68,6 +79,9 @@ if pandoc "$MD_FILE" \
 else
   echo "  PDF generation failed."
 fi
+
+# --- Clean up temp file ---
+rm -f "$CLEAN_MD"
 
 echo ""
 echo "Done."
