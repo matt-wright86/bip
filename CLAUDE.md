@@ -4,7 +4,7 @@
 Build in Public is a weekly lightly moderated open forum at Improving (a consulting company). The purpose is to create space for narrating real work, sharing unfinished thinking, and learning through explanation rather than performance.
 
 **Facilitator**: Matthew Wright
-**Schedule**: Thursdays at 1:30 PM (was originally Fridays)
+**Schedule**: Fridays, 2:00–3:00 PM Central
 **Format**: ~1 hour hybrid meeting (in-office + remote participants)
 
 ## File Naming Convention
