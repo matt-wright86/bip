@@ -11,9 +11,9 @@ description: "Daniel facilitates in Matthew's absence. Topics: prompt libraries 
 
 - **Duration**: ~53 minutes
 - **Facilitator**: Daniel (filling in for Matthew, who was absent)
-- **Participants**: Daniel, Claudio, Joanna Szymczyk (remote), Jonathan, Terrence, Alexis
+- **Participants**: Daniel, Claudio, Joanna Szymczyk (remote), Jonathan, Terrence, Alexis, Alex
 
-> **Note on attribution**: This was a hybrid meeting recorded in Microsoft Teams. Remote participants (Joanna) have clear speaker identification in the Teams transcript. In-person participants share a conference room microphone. A secondary Deepgram-diarized transcript was used to improve speaker identification. Daniel is confirmed as facilitator (addressed by name). Claudio is confirmed through direct address. Jonathan and Terrence are identified through Deepgram diarization cross-referenced with contextual evidence (direct address by name, topic ownership, and continuity with previous sessions). Deepgram detected five speakers but there were likely additional in-person participants; some brief contributions may not be attributed.
+> **Note on attribution**: This was a hybrid meeting with a shared conference room microphone. Speaker identification was assisted by Deepgram diarization. Some brief contributions may not be attributed.
 
 ![Session opening — fresh board, no votes yet](screenshots/05-00m30s-session-opening.png)
 *Session opening: the agile.coffee board before voting, with participants visible in the Teams sidebar.*
