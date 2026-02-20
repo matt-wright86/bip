@@ -120,7 +120,7 @@ def transcribe(api_key, audio_path):
 
 def save_response(response, output_path):
     """Save Deepgram response as JSON."""
-    output_path.write_text(response.to_json(indent=2))
+    output_path.write_text(response.model_dump_json(indent=2))
     size_mb = output_path.stat().st_size / (1024 * 1024)
     print(f"\nSaved: {output_path} ({size_mb:.1f} MB)")
 
