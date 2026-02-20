@@ -103,9 +103,9 @@ Claudio introduced a concept he's been developing: the distinction between dashb
 
 He used the airplane analogy — passengers at an airport see flight status dashboards, but the pilot has a cockpit with instruments and controls. As Eric put it: "Traditional dashboards are like giving a dashboard to the flight attendant that tells them the airspeed. Then when the airspeed drops, they have to take action and go tell the pilot to do something. That doesn't make sense."
 
-![Freshpet cockpit prototype showing credit and quality alerts](screenshots/11-53m20s-demonstration-freshpet-cockpit.png)
+![FreshByte cockpit prototype showing credit and quality alerts](screenshots/11-53m20s-demonstration-freshbyte-cockpit.png)
 
-Claudio demonstrated this in practice with his Freshpet client work, showing cockpit prototypes that surface alerts (credit alerts, quality issues, oversold products) and provide tools to act — drill into details, contact vendors, create purchase orders — all from the same interface. He also showed a seller cockpit with configurable alert thresholds and event streams for order lifecycle tracking.
+Claudio demonstrated this in practice with his FreshByte client work, showing cockpit prototypes that surface alerts (credit alerts, quality issues, oversold products) and provide tools to act — drill into details, contact vendors, create purchase orders — all from the same interface. He also showed a seller cockpit with configurable alert thresholds and event streams for order lifecycle tracking.
 
 ![Seller cockpit with configurable alert thresholds](screenshots/12-56m10s-demonstration-seller-cockpit.png)
 
@@ -116,7 +116,7 @@ He sees this concept as applicable to Engage too: when you see your EIP data, th
 **Key points:**
 - Dashboards show information; cockpits show information and provide controls to act on it
 - Cockpits should be context-aware — different cockpits for different workflows and roles
-- The Freshpet implementation includes alerts, drill-down capability, and inline actions (e.g., creating purchase orders directly from the cockpit)
+- The FreshByte implementation includes alerts, drill-down capability, and inline actions (e.g., creating purchase orders directly from the cockpit)
 - Event sourcing enables rich cockpits by surfacing lifecycle events for orders and other entities
 - Claudio plans to write a blog post about this concept
 
