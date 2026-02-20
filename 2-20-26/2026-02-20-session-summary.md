@@ -10,7 +10,7 @@ description: "Server-side vs client-side logic with LLMs, agentic development wo
 ## Session Overview
 - **Duration**: ~61 minutes
 - **Facilitator**: Matthew Wright
-- **Participants**: Matthew Wright, Claudio, Jonathan, Eric, Danyal
+- **Participants**: Matthew Wright, Claudio, Jonathan, Eric, Danyal, Alex
 
 ![Matthew sharing the BiP session archive site](screenshots/01-03m20s-screen-share-bip-site.png)
 
